@@ -1,6 +1,7 @@
 """Write Night Shift as deterministic UTF-8 bytes."""
 
 import os
+import tempfile
 from pathlib import Path
 
 POEM = """Night Shift
@@ -41,7 +42,20 @@ def write_entry(output_dir: Path, poem: str = POEM) -> None:
     if not output_dir.is_absolute():
         output_dir = Path(__file__).resolve().parent / output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "entry.txt").write_bytes(payload)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb", dir=output_dir, prefix=".entry-", delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            if stream.write(payload) != len(payload):
+                raise OSError("Incomplete poem write")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, output_dir / "entry.txt")
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def main() -> None:
