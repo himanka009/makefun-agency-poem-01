@@ -51,6 +51,7 @@ def write_entry(output_dir: Path, poem: str = POEM) -> None:
             if stream.write(payload) != len(payload):
                 raise OSError("Incomplete poem write")
             stream.flush()
+            os.fchmod(stream.fileno(), 0o644)
             os.fsync(stream.fileno())
         os.replace(temporary, output_dir / "entry.txt")
     finally:

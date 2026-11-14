@@ -19,10 +19,11 @@ directly; relative overrides are anchored to the directory containing
 directories are created. Use a writable external destination with a read-only
 repository. The program validates nonblank content, 1–1000 Unicode code
 points, and strict UTF-8 encoding before creating directories or writing.
-It writes to a temporary sibling, checks the complete byte count, flushes and
-syncs the file, then closes it before atomically replacing `entry.txt`.
-A write, sync or replacement failure preserves the previous entry and removes
-the temporary file during exception cleanup. Successful publication leaves
+It writes to a temporary sibling, checks the complete byte count, flushes,
+sets mode `0644` for this public poem, and syncs the file, then closes it before
+atomically replacing `entry.txt`. This permits collection by a different user.
+A write, permission-setting, sync or replacement failure preserves the previous
+entry and removes the temporary file during exception cleanup. Successful publication leaves
 only `entry.txt` in a fresh output directory. This does not guarantee recovery
 after abrupt process termination or power loss; the directory is not synced.
 It writes explicit bytes with LF line endings and one final LF: 526 code
@@ -37,7 +38,8 @@ Native session records remain unchanged for separate authentic bundling.
 
 Local verification uses Python 3.13: exact candidate bytes, Unicode boundary
 and rejection cases, preservation of existing output on invalid content,
-simulated sync and replacement failures with temporary-file cleanup,
+mode `0644`, simulated permission-setting, sync and replacement failures with
+temporary-file cleanup,
 nested output creation, unrelated working directories and repeat subprocess
 runs. These are local checks, not Docker harness verification, transcript
 checker acceptance or an official literary assessment. No scorer or submission
